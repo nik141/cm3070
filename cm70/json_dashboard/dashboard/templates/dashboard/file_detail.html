@@ -1,0 +1,13 @@
+<!-- dashboard/templates/dashboard/file_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Metadata for {{ file_name }}</title>
+</head>
+<body>
+    <h1>Metadata for {{ file_name }}</h1>
+    <pre>{{ metadata | safe }}</pre>
+    <a href="{% url 'index' %}">Back to files list</a>
+</body>
+</html>

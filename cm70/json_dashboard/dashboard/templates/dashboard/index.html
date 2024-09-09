@@ -1,0 +1,107 @@
+<!-- dashboard/templates/dashboard/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intruder Detection Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #dbedf2; /* Light grey background */
+        }
+        .video-card {
+            transition: transform 0.2s;
+        }
+        .video-card:hover {
+            transform: scale(1.05);
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .video-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .video-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Home Surveillance System</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Settings</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Video Gallery</h1>
+        <div class="row">
+            {% for video in videos %}
+            <div class="col-md-4 mb-3">
+                <div class="card video-card">
+                    <video class="card-img-top" controls>
+                        <source src="{{ video.video_path }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="card-body">
+                        <h5 class="card-title">Intruder Detected</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ video.filename }}</h6>
+                        <p class="card-text">
+                            Size: {{ video.metadata.object_size|default:"Unknown" }} | 
+                            Position: {{ video.metadata.position|default:"Unknown" }}
+                        </p>
+                        <p class="card-text">{{ video.metadata.description|default:"No description available." }}</p>
+                        <button class="btn btn-danger delete-btn" data-filename="{{ video.filename }}">Delete</button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p>No videos available.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.delete-btn').click(function() {
+                const filename = $(this).data('filename');
+                const card = $(this).closest('.col-md-4'); // Select the column to remove the entire space
+                $.ajax({
+                    url: `/delete/${filename}/`,
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            // Fade out the column before removing it to avoid blank spaces
+                            card.fadeOut(300, function() {
+                                $(this).remove();  // Remove the column and trigger layout reflow
+                                document.body.offsetHeight; // Triggers reflow
+                            });
+                            alert('Video deleted successfully.');
+                        } else {
+                            alert('Failed to delete the video: ' + (response.error || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
